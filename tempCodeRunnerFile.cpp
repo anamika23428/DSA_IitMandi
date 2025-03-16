@@ -1,0 +1,1 @@
+ cout<<zero<<" cvdfv"<<one;
