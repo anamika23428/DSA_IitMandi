@@ -29,7 +29,6 @@ public:
         int cnt = 1;
 
         while (temp) {
-          
             for (size_t i = 0; i < div.size(); i++) {
                 if (cnt % div[i] == 0 && ptr[i] != nullptr) {
                     ptr[i] = ptr[i]->next;

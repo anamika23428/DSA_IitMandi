@@ -1,56 +1,201 @@
 #include <iostream>
-#include <vector>
-#include <unordered_map>
+#include <algorithm>
 using namespace std;
 
-// Function to perform DFS and count the minimum number of buses
-int dfs(int node, int parent, const vector<vector<int>>& adj, const vector<int>& passengers) {
-    int buses = 0;
-    for (int neighbor : adj[node]) {
-        if (neighbor != parent) {
-            buses += dfs(neighbor, node, adj, passengers);
+struct Node {
+    int key;
+    Node* left;
+    Node* right;
+    int height;
+    
+    Node(int val) : key(val), left(nullptr), right(nullptr), height(1) {}
+};
+
+// Function to get height
+int height(Node* n) {
+    return n ? n->height : 0;
+}
+
+// Function to get balance factor
+int getBalance(Node* n) {
+    return n ? height(n->left) - height(n->right) : 0;
+}
+
+// Update height of the node
+void updateHeight(Node* n) {
+    if (n)
+        n->height = 1 + max(height(n->left), height(n->right));
+}
+
+// Right rotate
+Node* rotateRight(Node* y) {
+    Node* x = y->left;
+    Node* T2 = x->right;
+    
+    x->right = y;
+    y->left = T2;
+
+    updateHeight(y);
+    updateHeight(x);
+    
+    return x;
+}
+
+// Left rotate
+Node* rotateLeft(Node* x) {
+    Node* y = x->right;
+    Node* T2 = y->left;
+    
+    y->left = x;
+    x->right = T2;
+
+    updateHeight(x);
+    updateHeight(y);
+    
+    return y;
+}
+
+// Insert into AVL tree
+Node* insert(Node* node, int key) {
+    if (!node) return new Node(key);
+    
+    if (key < node->key)
+        node->left = insert(node->left, key);
+    else if (key > node->key)
+        node->right = insert(node->right, key);
+    else
+        return node; // no duplicate keys
+
+    updateHeight(node);
+
+    int balance = getBalance(node);
+
+    // Balance and rotate
+    if (balance > 1 && key < node->left->key)
+        return rotateRight(node);
+    if (balance < -1 && key > node->right->key)
+        return rotateLeft(node);
+    if (balance > 1 && key > node->left->key) {
+        node->left = rotateLeft(node->left);
+        return rotateRight(node);
+    }
+    if (balance < -1 && key < node->right->key) {
+        node->right = rotateRight(node->right);
+        return rotateLeft(node);
+    }
+
+    return node;
+}
+
+// Get node with minimum value
+Node* minValueNode(Node* node) {
+    Node* current = node;
+    while (current && current->left)
+        current = current->left;
+    return current;
+}
+
+// Delete from AVL tree
+Node* deleteNode(Node* root, int key) {
+    if (!root) return root;
+    
+    if (key < root->key)
+        root->left = deleteNode(root->left, key);
+    else if (key > root->key)
+        root->right = deleteNode(root->right, key);
+    else {
+        if (!root->left || !root->right) {
+            Node* temp = root->left ? root->left : root->right;
+            delete root;
+            return temp;
         }
+        Node* temp = minValueNode(root->right);
+        root->key = temp->key;
+        root->right = deleteNode(root->right, temp->key);
     }
-    // If the current node has passengers and is not the root (stop 1), increment buses
-    if (passengers[node - 1] == 1 && node != 1) {
-        buses += 1;
+
+    updateHeight(root);
+
+    int balance = getBalance(root);
+
+    // Balance and rotate
+    if (balance > 1 && getBalance(root->left) >= 0)
+        return rotateRight(root);
+    if (balance > 1 && getBalance(root->left) < 0) {
+        root->left = rotateLeft(root->left);
+        return rotateRight(root);
     }
-    return buses;
+    if (balance < -1 && getBalance(root->right) <= 0)
+        return rotateLeft(root);
+    if (balance < -1 && getBalance(root->right) > 0) {
+        root->right = rotateRight(root->right);
+        return rotateLeft(root);
+    }
+
+    return root;
 }
 
-// Function to solve the problem
-int solve(int N, vector<int>& passengers, vector<pair<int, int>>& edges) {
-    // Build adjacency list for the tree
-    vector<vector<int>> adj(N + 1);
-    for (auto& edge : edges) {
-        int u = edge.first;
-        int v = edge.second;
-        adj[u].push_back(v);
-        adj[v].push_back(u);
-    }
-
-    // Start DFS from stop 1
-    return dfs(1, -1, adj, passengers);
+// Search in AVL tree
+bool search(Node* root, int key) {
+    if (!root) return false;
+    if (key == root->key) return true;
+    if (key < root->key)
+        return search(root->left, key);
+    else
+        return search(root->right, key);
 }
 
+// Display the AVL tree (in-order + structure)
+void display(Node* root, int space = 0, int height = 10) {
+    if (!root) return;
+
+    space += height;
+    display(root->right, space);
+
+    cout << endl;
+    for (int i = height; i < space; i++)
+        cout << ' ';
+    cout << root->key;
+
+    display(root->left, space);
+}
+
+// Driver
 int main() {
-    int T;
-    cin >> T; // Number of test cases
-    while (T--) {
-        int N;
-        cin >> N; // Number of stops
-        vector<int> passengers(N);
-        for (int i = 0; i < N; i++) {
-            cin >> passengers[i]; // Passengers at each stop
-        }
-        vector<pair<int, int>> edges(N - 1);
-        for (int i = 0; i < N - 1; i++) {
-            cin >> edges[i].first >> edges[i].second; // Roads between stops
-        }
+    Node* root = nullptr;
+    int choice, val;
 
-        // Call the solve function
-        int result = solve(N, passengers, edges);
-        cout << result << endl;
+    while (true) {
+        cout << "\n\nAVL Tree Operations:\n1. Insert\n2. Delete\n3. Search\n4. Exit\nEnter choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                cout << "Enter value to insert: ";
+                cin >> val;
+                root = insert(root, val);
+                cout << "Tree after insertion:\n";
+                display(root);
+                break;
+            case 2:
+                cout << "Enter value to delete: ";
+                cin >> val;
+                root = deleteNode(root, val);
+                cout << "Tree after deletion:\n";
+                display(root);
+                break;
+            case 3:
+                cout << "Enter value to search: ";
+                cin >> val;
+                if (search(root, val))
+                    cout << "Value found in tree.";
+                else
+                    cout << "Value not found.";
+                break;
+            case 4:
+                return 0;
+            default:
+                cout << "Invalid choice.";
+        }
     }
-    return 0;
 }

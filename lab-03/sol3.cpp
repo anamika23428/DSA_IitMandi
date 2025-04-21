@@ -29,12 +29,12 @@ public:
         tree.pop_back();           // Remove the last element
     }
 
-    // void inorder(int index = 0) {
-    //     if (index >= tree.size()) return;
-    //     inorder(2 * index + 1); // Left subtree
-    //     cout << tree[index] << " ";
-    //     inorder(2 * index + 2); // Right subtree
-    // }
+    void inorder(int index = 0) {
+        if (index >= tree.size()) return;
+        inorder(2 * index + 1); // Left subtree
+        cout << tree[index] << " ";
+        inorder(2 * index + 2); // Right subtree
+    }
 
     void display() {
         for (int i : tree) {
@@ -61,7 +61,8 @@ int main() {
     cout << "After deleting 20:" << endl;
     tree.display();
 
-    cout << "Search 20: " << tree.search(20) << endl; // Should return -1
+    cout << "Search 20: " << tree.search(20) << endl; // Should return -1/
+    tree.inorder();
 
     return 0;
 }
