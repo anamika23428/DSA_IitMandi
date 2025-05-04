@@ -25,27 +25,36 @@ class max_heap{
         }
     }
 
-
-    void delete_root(){
-        if(size==0){cout<<"heap is empty"<<endl;return ;}
-        arr[1]=arr[size];
-        size--;
-        int idx=1;
-        while(idx<size){
-            int left=2*idx;
-            int right=2*idx+1;
-            if(left<size && arr[left]>arr[idx]){
-                swap(arr[left],arr[idx]);
-                idx=left;
-            }
-            else if(right<size && arr[right]>arr[idx]){
-                swap(arr[right],arr[idx]);
-                idx=right;
-                }
-            else{return ;}
+    void heapify(vector<int> arr, int i){
+        int l= 2*i;
+        int r= 2*i+1;
+        int largest=-1;
+        if(l<size && arr[l]>arr[i]){
+            largest=l;
         }
-
+        else{largest=i;}
+        if(r<size && arr[r]>arr[largest]){
+            largest=r;
+        }
+        if(largest!=i){swap(arr[largest],arr[i]);heapify(arr, largest);}
     }
+
+    void deleteRoot(vector<int> arr){
+        int n=size;
+    // Get the last element
+    int lastElement = arr[n - 1];
+ 
+    // Replace root with last element
+    arr[0] = lastElement;
+ 
+    // Decrease size of heap by 1
+    n = n - 1;
+ 
+    // heapify the root node
+    heapify(arr,  0);
+}
+
+    
     void print(){
         for(int i=1;i<=size;i++){
             cout<<arr[i]<<" ";}

@@ -90,7 +90,7 @@ class AVL{
     
         cout << endl;
         for (int i = height; i < space; i++)
-            cout << "----";
+            cout << ' ';
         cout << root->data;
     
         display(root->left, space);
